@@ -1,10 +1,13 @@
-# Better-Fluent ffmpeg-API for node.js a fork of Node-Fluent-ffmpeg
+# Better-fluent-ffmpeg
 
-[![Coverage Status](https://coveralls.io/repos/github/fluent-ffmpeg/node-fluent-ffmpeg/badge.svg?branch=master)](https://coveralls.io/github/fluent-ffmpeg/node-fluent-ffmpeg?branch=master)
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Ffluent-ffmpeg%2Fnode-fluent-ffmpeg.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Ffluent-ffmpeg%2Fnode-fluent-ffmpeg?ref=badge_shield)
+[![CI](https://github.com/ShriedMC/Better-fluent-ffmpeg/actions/workflows/ci.yml/badge.svg)](https://github.com/ShriedMC/Better-fluent-ffmpeg/actions/workflows/ci.yml)
 
 ## Better-Fluent
-The mere goal of this library is to keep the tools that you've been using, while allowing you to use newer versions with some improvements! (Maintained by an AI agent, overviewed by a human, reports responded to by a human)
+This fork maintains the fluent-ffmpeg 2.x API for current Node.js and FFmpeg releases. See [CHANGELOG.md](CHANGELOG.md) for changes and compatibility notes.
+
+Maintained by an AI agent, overviewed by a human, reports responded to by a human.
+
+Node.js **22.22.2 or newer** is required. CI covers Node 22, 24, and 26, the Ubuntu FFmpeg package, and an FFmpeg 8.1.3 build. FFmpeg and ffprobe are separate system dependencies; this package does not download them. Individual codecs and filters depend on your FFmpeg build.
 
 ## About
 
@@ -15,15 +18,27 @@ This library abstracts the complex command-line usage of ffmpeg into a fluent, e
 
 ## Installation
 
-Via npm:
+Install this fork directly from GitHub:
 
 ```sh
-$ npm install fluent-ffmpeg
+$ npm install github:ShriedMC/Better-fluent-ffmpeg
 ```
 
-Or as a submodule:
+The package name remains `fluent-ffmpeg`, so existing imports still work:
+
+```js
+const ffmpeg = require('fluent-ffmpeg');
+```
+
+`npm install fluent-ffmpeg` installs the upstream package. This fork has not selected a separate npm release name yet. For development:
+
 ```sh
-$ git submodule add git://github.com/schaermu/node-fluent-ffmpeg.git vendor/fluent-ffmpeg
+$ git clone https://github.com/ShriedMC/Better-fluent-ffmpeg.git
+$ cd Better-fluent-ffmpeg
+$ npm install --global yarn@1.22.22
+$ yarn install --frozen-lockfile
+$ yarn test
+$ yarn docs
 ```
 
 
@@ -37,19 +52,19 @@ You will find a lot of usage examples (including a real-time streaming example u
 
 #### ffmpeg and ffprobe
 
-fluent-ffmpeg requires ffmpeg >= 0.9 to work.  It may work with previous versions but several features won't be available (and the library is not tested with lower versions anylonger).
+Use a current FFmpeg release and its matching ffprobe executable. FFmpeg 7.1.5 and 8.1.3 are validated locally; CI also exercises Ubuntu's packaged FFmpeg. Older releases may work but are not all tested. Capability discovery handles both the older listing layouts and FFmpeg 8's updated filter and device columns.
 
 If the `FFMPEG_PATH` environment variable is set, fluent-ffmpeg will use it as the full path to the `ffmpeg` executable.  Otherwise, it will attempt to call `ffmpeg` directly (so it should be in your `PATH`).  You must also have ffprobe installed (it comes with ffmpeg in most distributions).  Similarly, fluent-ffmpeg will use the `FFPROBE_PATH` environment variable if it is set, otherwise it will attempt to call it in the `PATH`.
 
-Most features should work when using avconv and avprobe instead of ffmpeg and ffprobe, but they are not officially supported at the moment.
+Alternative binaries such as avconv/avprobe are not tested.
 
 **Windows users**: most probably ffmpeg and ffprobe will _not_ be in your `%PATH`, so you _must_ set `%FFMPEG_PATH` and `%FFPROBE_PATH`.
 
-**Debian/Ubuntu users**: the official repositories have the ffmpeg/ffprobe executable in the `libav-tools` package, and they are actually rebranded avconv/avprobe executables (avconv is a fork of ffmpeg).  They should be mostly compatible, but should you encounter any issue, you may want to use the real ffmpeg instead.  You can either compile it from source or find a pre-built .deb package at https://ffmpeg.org/download.html (For Ubuntu, the `ppa:mc3man/trusty-media` PPA provides recent builds).
+**Debian/Ubuntu users**: `sudo apt-get install ffmpeg` installs FFmpeg and ffprobe. Other platforms can use the packages linked from https://ffmpeg.org/download.html. Check that your build includes the encoders you need (for example, libmp3lame and libx264).
 
 #### flvtool2 or flvmeta
 
-If you intend to encode FLV videos, you must have either flvtool2 or flvmeta installed and in your `PATH` or fluent-ffmpeg won't be able to produce streamable output files.  If you set either the `FLVTOOL2_PATH` or `FLVMETA_PATH`, fluent-ffmpeg will try to use it instead of searching in the `PATH`.
+The optional `.flvmeta()` post-processing step requires flvmeta or flvtool2 in your `PATH`. Normal FLV encoding does not require these tools. If you set `FLVTOOL2_PATH` or `FLVMETA_PATH`, fluent-ffmpeg will try that path first. On Debian/Ubuntu, install flvmeta with `sudo apt-get install flvmeta`.
 
 #### Setting binary paths manually
 
@@ -1374,10 +1389,10 @@ The returned object for filters looks like:
 }
 ```
 
-* `input` tells the input type this filter operates on, one of "audio", "video" or "none".  When "none", the filter likely generates output from nothing
+* `input` tells the input type this filter operates on, one of "audio", "video", "none", or "dynamic". When "none", the filter likely generates output from nothing. "dynamic" means the number and/or type of input pads is chosen at runtime
 * `multipleInputs` tells whether the filter can accept multiple inputs
-* `output` tells the output type this filter generates, one of "audio", "video" or "none".  When "none", the filter has no output (sink only)
-* `multipleInputs` tells whether the filter can generate multiple outputs
+* `output` tells the output type this filter generates, one of "audio", "video", "none", or "dynamic". When "none", the filter has no output (sink only)
+* `multipleOutputs` tells whether the filter can generate multiple outputs
 
 ### Cloning an FfmpegCommand
 
@@ -1456,13 +1471,20 @@ To avoid polluting the commit history, make sure to only commit the regenerated 
 
 ### Running tests
 
-To run unit tests, first make sure you installed npm dependencies (run `npm install`).
+Install the pinned dependencies with `yarn install --frozen-lockfile`. The integration suite requires ffmpeg, ffprobe, flvmeta (or flvtool2), libmp3lame, and libx264. Run:
 
 ```sh
-$ make test
+$ yarn test
+$ yarn coverage
+$ yarn docs
+$ node tools/check-package.js
 ```
 
-Make sure your ffmpeg installation is up-to-date to prevent strange assertion errors because of missing codecs/bugfixes.
+Coverage uses Node's V8 engine through c8 and writes `coverage/lcov.info`. CI stores it as an artifact; external coverage-service tokens are not required.
+
+The suite keeps three optional alternative-binary-path checks pending unless `ALT_FFMPEG_PATH`, `ALT_FFPROBE_PATH`, and `ALT_FLVTOOL_PATH` are provided. One obsolete Node 0.8 check and three legacy ffserver network tests also remain pending. Local file and stream integration tests still run.
+
+To reproduce the FFmpeg 8.1.3 CI build, install a C compiler, make, curl, tar, libmp3lame development headers, libx264 development headers, and zlib development headers, then run `bash tools/build-test-ffmpeg.sh /absolute/install/path`. Put its `bin` directory first in `PATH` for the test run. This is a limited build for the integration suite, not a general-purpose FFmpeg distribution.
 
 ## Main contributors
 
@@ -1486,6 +1508,3 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Ffluent-ffmpeg%2Fnode-fluent-ffmpeg.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Ffluent-ffmpeg%2Fnode-fluent-ffmpeg?ref=badge_large)

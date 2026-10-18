@@ -1,55 +1,58 @@
-name: CI Testing
+name: CI
 on:
   pull_request:
   push:
-    branches:
-      - master
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
 jobs:
   test:
-    name: Run tests
-    runs-on: ubuntu-latest
+    name: Node ${{ matrix.node }} / FFmpeg ${{ matrix.ffmpeg }}
+    runs-on: ubuntu-24.04
     strategy:
+      fail-fast: false
       matrix:
-        node: [18, 20, 21]
+        node: [22, 24, 26]
+        ffmpeg: [system]
+        include:
+          - node: 24
+            ffmpeg: '8.1.3'
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Install flvtool2
-        run: sudo gem install flvtool2
-      - name: Install ffmpeg
-        run: sudo apt install -y ffmpeg
-      - name: Setup node
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node }}
-          cache: yarn
+      - name: Install tools
+        run: |
+          npm install --global yarn@1.22.22
+          sudo apt-get update
+          sudo apt-get install --yes ffmpeg flvmeta libmp3lame-dev libx264-dev zlib1g-dev
+      - name: Build FFmpeg 8.1.3
+        if: matrix.ffmpeg == '8.1.3'
+        run: |
+          bash tools/build-test-ffmpeg.sh "$RUNNER_TEMP/ffmpeg8"
+          echo "$RUNNER_TEMP/ffmpeg8/bin" >> "$GITHUB_PATH"
+      - name: Show runtime versions
+        run: |
+          node --version
+          yarn --version
+          ffmpeg -version
+          ffprobe -version
       - name: Install dependencies
-        run: yarn
+        run: yarn install --frozen-lockfile --non-interactive
       - name: Run tests
         run: yarn test
       - name: Generate coverage report
         run: yarn coverage
-      - name: Store coveralls coverage
-        uses: coverallsapp/github-action@v2
+      - name: Build documentation
+        run: yarn docs
+      - name: Validate package contents
+        run: node tools/check-package.js
+      - name: Upload coverage
+        uses: actions/upload-artifact@v6
         with:
-          flag-name: linux-node-${{ matrix.node }}
-          parallel: true
-      - name: Upload to codecov
-        uses: codecov/codecov-action@v3
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        with:
-          files: coverage/lcov.info
-          name: ubuntu-latest-node-${{ matrix.node }}
-
-  upload-coverage:
-    name: Upload coverage
-    needs: test
-    if: ${{ always() }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Upload to coveralls
-        uses: coverallsapp/github-action@v2
-        with:
-          parallel-finished: true
-          carryforward: "linux-node-18,linux-node-20,linux-node-21"
+          name: coverage-node-${{ matrix.node }}-ffmpeg-${{ matrix.ffmpeg }}
+          path: coverage/lcov.info
