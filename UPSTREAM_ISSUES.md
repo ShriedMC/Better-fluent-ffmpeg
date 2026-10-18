@@ -1,0 +1,24 @@
+# Upstream issue review
+
+This fork reviewed the reports below from [node-fluent-ffmpeg's issue tracker](https://github.com/fluent-ffmpeg/node-fluent-ffmpeg/issues). Upstream reports remain open there; the changes and tests live in this fork.
+
+| Upstream report | Result in this fork | Evidence and limits |
+| --- | --- | --- |
+| [#1306: aspect ratio has no effect](https://github.com/fluent-ffmpeg/node-fluent-ffmpeg/issues/1306) | Fixed standalone `aspect()` calls by passing `-aspect`. Existing explicit-size behavior is preserved. Invalid ratios are rejected. | The reported no-op reproduced: a requested 1:1 output remained 16:9. A real transcode and ffprobe regression now confirm 1:1 display aspect with unchanged pixel dimensions. Argument tests cover output isolation, repeated calls, and method order. This changes the previously documented standalone no-op. |
+| [#1316: crash reading undefined output buffers](https://github.com/fluent-ffmpeg/node-fluent-ffmpeg/issues/1316) | Preserve output buffers on child errors, guard early errors, and finish once if error is followed by exit. | A child error followed by exit reproduced a duplicate completion callback. The regression now checks one callback with captured diagnostics. The original intermittent Windows/Google TTS workload was not reproduced. |
+| [#1285: invalid executable after successful conversion](https://github.com/fluent-ffmpeg/node-fluent-ffmpeg/issues/1285) | Clear cached capabilities when the FFmpeg path changes and report lookup/spawn errors gracefully. | A warmed capability cache followed by an invalid executable now produces an `ENOENT` error event, without a secondary TypeError. |
+| [#1282: lavfi input unavailable](https://github.com/fluent-ffmpeg/node-fluent-ffmpeg/issues/1282) | Accept the device column in FFmpeg 7/8 format listings. | A real `anullsrc` lavfi input is transcoded and probed without overriding capability detection. |
+| [#1323: gdigrab input unavailable](https://github.com/fluent-ffmpeg/node-fluent-ffmpeg/issues/1323) | The same format parser fix admits advertised device inputs. | Regressions use `gdigrab`, `lavfi`, and `x11grab` listing samples and run capability preflight. Windows capture hardware is not exercised in Linux tests. |
+| [#1308: vulnerable async dependency](https://github.com/fluent-ffmpeg/node-fluent-ffmpeg/issues/1308) | Upgrade async from 0.2.x to 3.2.6 and refresh the dependency lockfile. | Full dependency audit reports no known advisories at the time of validation; the integration suite exercises the callback API. |
+| [#1280: coverage bundled in published package](https://github.com/fluent-ffmpeg/node-fluent-ffmpeg/issues/1280) | Restrict package contents with an explicit file list. | `node tools/check-package.js` inspects npm's actual package selection after tests and docs generation. A packed installation also encoded and probed H.264/MP4 successfully. |
+
+## Reports investigated without a code fix
+
+- [#1322: percentage screenshots](https://github.com/fluent-ffmpeg/node-fluent-ffmpeg/issues/1322): the supplied error is `Cannot find ffprobe`. Percentage timestamps require duration metadata, so a working ffprobe installation/path is a prerequisite. The existing percentage screenshot tests pass with ffprobe available.
+- [#1314: incorrect MP4/M4A duration](https://github.com/fluent-ffmpeg/node-fluent-ffmpeg/issues/1314): the report's two logs use different FFmpeg binaries (2018 versus 6.1). They do not establish a wrapper duration bug. Set `FFMPEG_PATH` or `setFfmpegPath()` to the intended executable before comparing results.
+- [#1325: Node exits with status 13](https://github.com/fluent-ffmpeg/node-fluent-ffmpeg/issues/1325): the sample attaches `end`/`error` to the Writable returned by `.pipe()`, and its custom write function does not call the supplied callback. Register FFmpeg completion/error handlers on the command and respect Writable backpressure. This sample does not establish a Node or FFmpeg wrapper defect.
+- [#1296: missing lib-cov entry point](https://github.com/fluent-ffmpeg/node-fluent-ffmpeg/issues/1296): the selected fork already imports `./lib/fluent-ffmpeg` directly; no change is needed.
+- [#1303: SIGKILL on Windows](https://github.com/fluent-ffmpeg/node-fluent-ffmpeg/issues/1303): a process-group/Windows reproduction is needed. Linux signal tests pass; this report is not claimed fixed.
+- [#1309: seeking streamed Ogg](https://github.com/fluent-ffmpeg/node-fluent-ffmpeg/issues/1309): input seeking on non-seekable streams differs from file seeking. The original long Ogg/Opus fixture was not available for validation; this report is not claimed fixed. Consider output-side `.seekOutput()` when decoding forward through a stream.
+
+Tests: `yarn test`. Detailed regressions: `test/upstream-issues.test.js` and `test/compatibility.test.js`. No comments or issue closures are posted to the upstream repository by this work.

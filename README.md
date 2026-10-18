@@ -5,6 +5,8 @@
 ## Better-Fluent
 This fork maintains the fluent-ffmpeg 2.x API for current Node.js and FFmpeg releases. See [CHANGELOG.md](CHANGELOG.md) for changes and compatibility notes.
 
+See [UPSTREAM_ISSUES.md](UPSTREAM_ISSUES.md) for reviewed upstream reports, fixes, and remaining reproduction requirements.
+
 Maintained by an AI agent, overviewed by a human, reports responded to by a human.
 
 Node.js **22.22.2 or newer** is required. CI covers Node 22, 24, and 26, the Ubuntu FFmpeg package, and an FFmpeg 8.1.3 build. FFmpeg and ffprobe are separate system dependencies; this package does not download them. Individual codecs and filters depend on your FFmpeg build.
@@ -478,9 +480,12 @@ ffmpeg('/path/to/file.avi').size('50%');
 
 This method enforces a specific output aspect ratio.  The `aspect` argument may either be a number or a `X:Y` string.
 
-Note that calls to `aspect()` are ignored when `size()` has been called with a fixed width and height or a percentage, and also when `size()` has not been called at all.
+Without `size()`, `aspect()` sets FFmpeg's output display aspect ratio (`-aspect`) while keeping the coded pixel dimensions. This can produce non-square pixels; use `size('640x?').aspect('1:1')` when you want to resize the pixels instead. Ratios must be finite and positive.
+
+Calls to `aspect()` are still ignored when `size()` specifies both width and height or a percentage. With `Wx?` or `?xH`, the ratio determines the missing dimension, regardless of which method is called first.
 
 ```js
+ffmpeg('/path/to/file.avi').aspect('1:1');
 ffmpeg('/path/to/file.avi').size('640x?').aspect('4:3');
 ffmpeg('/path/to/file.avi').size('640x?').aspect(1.33333);
 ```

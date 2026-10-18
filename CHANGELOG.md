@@ -2,8 +2,12 @@
 
 ## Unreleased
 
+- Honor standalone `aspect()` / `withAspectRatio()` calls using FFmpeg's display-aspect option; preserve existing sizing behavior and reject invalid ratios (upstream #1306).
+- Retain captured diagnostics and invoke the process completion callback once when a child emits both error and exit events (upstream #1316).
+- Add regressions for device format preflight (#1323/#1282) and invalid executable paths after cache warming (#1285). See [UPSTREAM_ISSUES.md](UPSTREAM_ISSUES.md) for the reviewed reports and remaining limitations.
+
 - Require Node.js 22.22.2 or newer; test Node 22, 24, and 26 in CI.
-- Parse FFmpeg 8's two-column filter flags and device format column while retaining older listing support.
+- Parse FFmpeg 8's two-column filter flags and FFmpeg 7/8's device format column while retaining older listing support.
 - Include dynamic and mixed-input filters in capability discovery. Dynamic pad types are reported as `dynamic`.
 - Refresh cached capabilities when changing the FFmpeg executable.
 - Preserve fractional FPS and handle whitespace, KiB sizes, and unavailable progress timestamps.

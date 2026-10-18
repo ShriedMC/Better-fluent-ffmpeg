@@ -8,11 +8,11 @@ var files = JSON.parse(execFileSync(process.platform === 'win32' ? 'npm.cmd' : '
     return file.path;
   });
 
-['index.js', 'package.json', 'README.md', 'CHANGELOG.md', 'LICENSE', 'lib/processor.js'].forEach(function(file) {
+['index.js', 'package.json', 'README.md', 'CHANGELOG.md', 'UPSTREAM_ISSUES.md', 'LICENSE', 'lib/processor.js'].forEach(function(file) {
   assert.ok(files.includes(file), 'Missing package file: ' + file);
 });
 files.forEach(function(file) {
-  assert.ok(['index.js', 'package.json', 'README.md', 'CHANGELOG.md', 'LICENSE'].includes(file) || file.startsWith('lib/'),
+  assert.ok(['index.js', 'package.json', 'README.md', 'CHANGELOG.md', 'UPSTREAM_ISSUES.md', 'LICENSE'].includes(file) || file.startsWith('lib/'),
     'Unexpected package file: ' + file);
 });
 console.log('Package contents verified (' + files.length + ' files).');

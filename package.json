@@ -46,6 +46,7 @@
     "lib/",
     "README.md",
     "CHANGELOG.md",
+    "UPSTREAM_ISSUES.md",
     "LICENSE"
   ]
 }
