@@ -1152,15 +1152,52 @@ ffmpeg('/path/to/file1.avi')
   });
 ```
 
-**Warning:** ffprobe may be called with an input stream, but in this case *it will consume data from the stream*, and this data will no longer be available for ffmpeg.  Using both ffprobe and a transcoding command on the same input stream will most likely fail unless the stream is a live stream.  Only do this if you know what you're doing.
+#### Native structured metadata with ffprobeJSON()
 
-The returned object is the same that is returned by running the following command from your shell (depending on your ffmpeg version you may have to replace `-of` with `-print_format`) :
+`ffprobeJSON()` is available both on the module and on command instances. It supports the same input-index and options overloads as `ffprobe()`, but returns FFprobe's native JSON data. This preserves nested `side_data_list` entries (including display matrices and rotation), multiline tags, and program/stream relationships.
 
-```sh
-$ ffprobe -of json -show_streams -show_format /path/to/file.avi
+```js
+ffmpeg.ffprobeJSON('/path/to/video.mp4', function(err, metadata) {
+  if (err) throw err;
+  console.log(metadata.chapters);
+  console.log(metadata.streams[0].side_data_list);
+});
+
+// Programs are opt-in; this is useful for MPEG-TS inputs.
+ffmpeg.ffprobeJSON('/path/to/input.ts', ['-show_programs'], function(err, metadata) {
+  if (err) throw err;
+  console.log(metadata.programs);
+});
+
+ffmpeg('/path/to/first.mp4').input('/path/to/second.mp4')
+  .ffprobeJSON(0, ['-select_streams', 'v:0'], function(err, metadata) {
+    if (err) throw err;
+    console.log(metadata.streams);
+  });
 ```
 
-It will contain information about the container (as a `format` key) and an array of streams (as a `stream` key).  The format object and each stream object also contains metadata tags, depending on the format:
+Both methods request stream, format, and chapter metadata. The existing `ffprobe()` retains its legacy value conversion: for example, a numeric duration becomes a number. `ffprobeJSON()` keeps FFprobe's native types, so duration fields are usually strings; use `Number(value)` when arithmetic is needed. It enforces the JSON writer even if the options include another output format.
+
+#### Passing probe-specific options
+
+Pass FFprobe options as an array immediately before the callback. Options set through `.inputOptions()` belong to the transcoding command and are not automatically forwarded to FFprobe, since FFmpeg and FFprobe accept different flags. The same options overload works on static and instance calls, with or without an input index:
+
+```js
+ffmpeg.ffprobe('/path/to/video.mp4', ['-select_streams', 'v:0'], callback);
+command.ffprobeJSON(['-rtsp_transport', 'tcp'], callback);
+// For HTTP input, requestHeaders is a header string supplied by your application.
+command.ffprobe(['-headers', requestHeaders], callback);
+```
+
+**Warning:** both probe methods may be called with an input stream, but in this case *they consume data from the stream*, and this data will no longer be available for ffmpeg. Using a probe and a transcoding command on the same input stream will most likely fail unless the stream is a live stream. Only do this if you know what you're doing.
+
+`ffprobeJSON()` returns the object produced by the following command. `ffprobe()` returns legacy-converted metadata with the same stream, format, and chapter categories:
+
+```sh
+$ ffprobe -of json -show_streams -show_format -show_chapters /path/to/file.avi
+```
+
+It contains container information (`format`), an array of streams (`streams`), and chapter metadata (`chapters`). Metadata tags are available in their corresponding `tags` objects. The legacy API normalizes chapter tags as it does stream and format tags. For example:
 
 ```js
 {
