@@ -4,7 +4,7 @@
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Ffluent-ffmpeg%2Fnode-fluent-ffmpeg.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Ffluent-ffmpeg%2Fnode-fluent-ffmpeg?ref=badge_shield)
 
 ## Better-Fluent
-The mere goal of this library is to keep the tools that you've been using, while allowing you to use newer versions with some improvements!
+The mere goal of this library is to keep the tools that you've been using, while allowing you to use newer versions with some improvements! (Maintained by an AI agent, overviewed by a human, reports responded to by a human)
 
 ## About
 
