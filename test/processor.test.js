@@ -101,11 +101,12 @@ describe('Processor', function() {
     this.getCommand = function(args) {
       var cmd = new FfmpegCommand(args);
       cmd.on('start', function() {
-        processes.push(cmd.ffmpegProc);
+        var child = cmd.ffmpegProc;
+        processes.push(child);
 
         // Remove process when it exits
-        cmd.ffmpegProc.on('exit', function() {
-          processes.splice(processes.indexOf(cmd.ffmpegProc), 1);
+        child.on('exit', function() {
+          processes.splice(processes.indexOf(child), 1);
         });
       });
 
@@ -200,6 +201,7 @@ describe('Processor', function() {
       this.files.push(testFile);
 
       var ffmpegJob = this.getCommand({ source: this.testfilebig, logger: testhelper.logger, timeout: 2 })
+          .inputOptions('-re')
           .usingPreset('divx');
 
       var startCalled = false;
@@ -261,6 +263,7 @@ describe('Processor', function() {
       var self = this;
 
       command
+          .inputOptions('-re')
           .usingPreset('divx')
           .on('start', function() {
             command.ffmpegProc.on('exit', function() {
@@ -280,15 +283,20 @@ describe('Processor', function() {
     });
 
     it('should not keep node process running on completion', function(done) {
+      this.timeout(10000);
       var script = `
         var ffmpeg = require('.');
         ffmpeg('${this.testfilebig}', { timeout: 60 })
-          .addOption('-t', 1)
+          .videoCodec('rawvideo')
+          .audioCodec('pcm_s16le')
+          .addOption('-t', 0.1)
           .addOption('-f', 'null')
           .saveToFile('/dev/null');
       `;
 
-      exec(`node -e "${script}"`, { timeout: 1000 }, done);
+      // Allow software-only FFmpeg builds time to start. A leaked 60-second
+      // command timer must still prevent the child from exiting within 5 seconds.
+      exec(`node -e "${script}"`, { timeout: 5000 }, done);
     });
 
     it('should kill the process with .kill', function(done) {
@@ -296,6 +304,7 @@ describe('Processor', function() {
       this.files.push(testFile);
 
       var ffmpegJob = this.getCommand({ source: this.testfilebig, logger: testhelper.logger })
+          .inputOptions('-re')
           .usingPreset('divx');
 
       var startCalled = false;
@@ -332,6 +341,7 @@ describe('Processor', function() {
       this.files.push(testFile);
 
       var ffmpegJob = this.getCommand({ source: this.testfilebig, logger: testhelper.logger, timeout: 2 })
+          .inputOptions('-re')
           .usingPreset('divx');
 
       var startCalled = true;
@@ -1214,6 +1224,7 @@ describe('Processor', function() {
       var command = this.getCommand({ source: this.testfilebig, logger: testhelper.logger });
 
       command
+        .inputOptions('-re')
         .usingPreset('divx')
         .on('start', function() {
           setTimeout(function() {

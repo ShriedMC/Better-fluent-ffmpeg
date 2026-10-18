@@ -1,23 +1,18 @@
 {
-	"opts": {
-		"recurse": true,
-		"verbose": true,
-		"destination": "doc",
-		"template": "tools/jsdoc-template"
-	},
-
-	"source": {
-		"include": ["README.md", "lib"],
-		"excludePattern": "lib\/presets"
-	},
-
-	"plugins": [
-		"plugins/markdown",
-		"tools/jsdoc-aliases.js"
-	],
-
-	"markdown": {
-		"parser": "evilstreak",
-		"dialect": "Markuru"
-	}
+  "opts": {
+    "recurse": true,
+    "verbose": true,
+    "destination": "build/docs"
+  },
+  "source": {
+    "include": [
+      "README.md",
+      "lib"
+    ],
+    "excludePattern": "lib/presets"
+  },
+  "plugins": [
+    "plugins/markdown",
+    "tools/jsdoc-aliases.js"
+  ]
 }
