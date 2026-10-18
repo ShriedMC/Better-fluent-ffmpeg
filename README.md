@@ -2,14 +2,21 @@
 
 [![CI](https://github.com/ShriedMC/Better-fluent-ffmpeg/actions/workflows/ci.yml/badge.svg)](https://github.com/ShriedMC/Better-fluent-ffmpeg/actions/workflows/ci.yml)
 
-## Better-Fluent
-This fork maintains the fluent-ffmpeg 2.x API for current Node.js and FFmpeg releases. See [CHANGELOG.md](CHANGELOG.md) for changes and compatibility notes.
+**A maintained fluent-ffmpeg fork for Node.js video/audio processing with current FFmpeg.**
 
-See [UPSTREAM_ISSUES.md](UPSTREAM_ISSUES.md) for reviewed upstream reports, fixes, and remaining reproduction requirements.
+The [original repository](https://github.com/fluent-ffmpeg/node-fluent-ffmpeg) is archived. This fork continues the familiar command-building API, fixes reproducible upstream bugs, and tests against current tools. It is an independent continuation; the original authors' credits and MIT license are retained.
+
+- Discover FFmpeg devices and filters with FFmpeg 7/8 listing formats.
+- Read chapters, rotation, nested side data, and MPEG-TS programs with the additive `ffprobeJSON()` API.
+- Reuse command configuration through repaired cloning, with isolated processing options.
+
+See the [change log](CHANGELOG.md), [reviewed upstream issues](UPSTREAM_ISSUES.md), and [contribution guide](.github/CONTRIBUTING.md) for evidence, limitations, and ways to help.
 
 Maintained by an AI agent, overviewed by a human, reports responded to by a human.
 
 Node.js **22.22.2 or newer** is required. CI covers Node 22, 24, and 26, the Ubuntu FFmpeg package, and an FFmpeg 8.1.3 build. FFmpeg and ffprobe are separate system dependencies; this package does not download them. Individual codecs and filters depend on your FFmpeg build.
+
+CI runs on Linux. Reports and reproducible examples from Windows and macOS are welcome.
 
 ## About
 
@@ -32,7 +39,16 @@ The package name remains `fluent-ffmpeg`, so existing imports still work:
 const ffmpeg = require('fluent-ffmpeg');
 ```
 
-`npm install fluent-ffmpeg` installs the upstream package. This fork has not selected a separate npm release name yet. For development:
+`npm install fluent-ffmpeg` installs the upstream package. This fork has not selected a separate npm release name yet. Commit your package lockfile to retain the resolved Git commit.
+
+### Moving from upstream
+
+1. Upgrade to Node.js 22.22.2 or newer and install FFmpeg with its matching ffprobe.
+2. Replace the upstream dependency with the GitHub install command above; keep `require('fluent-ffmpeg')` imports.
+3. Review the [compatibility notes](CHANGELOG.md) and run your application's media tests. Standalone `.aspect()` now takes effect; cloned processing options are independent. Existing `ffprobe()` conversions remain available, while `ffprobeJSON()` retains native JSON types.
+
+### Development installation
+
 
 ```sh
 $ git clone https://github.com/ShriedMC/Better-fluent-ffmpeg.git
@@ -41,6 +57,40 @@ $ npm install --global yarn@1.22.22
 $ yarn install --frozen-lockfile
 $ yarn test
 $ yarn docs
+```
+
+## Quick start
+
+With `ffmpeg` and `ffprobe` in your `PATH`, convert a local file to H.264/AAC MP4. This example requires an FFmpeg build with `libx264` and `aac` encoders:
+
+```js
+const ffmpeg = require('fluent-ffmpeg');
+
+ffmpeg('input.mp4')
+  .videoCodec('libx264')
+  .audioCodec('aac')
+  .on('error', (err, stdout, stderr) => {
+    console.error(err.message, stderr);
+    process.exitCode = 1;
+  })
+  .on('end', () => console.log('Saved output.mp4'))
+  .save('output.mp4');
+```
+
+Read structured metadata without transcoding:
+
+```js
+const ffmpeg = require('fluent-ffmpeg');
+
+ffmpeg.ffprobeJSON('input.mp4', (err, metadata) => {
+  if (err) {
+    console.error(err.message);
+    process.exitCode = 1;
+    return;
+  }
+  console.log(metadata.streams);
+  console.log(metadata.chapters);
+});
 ```
 
 
@@ -1472,19 +1522,19 @@ command.save('/path/to/output-original-size.mp4');
 
 ## Contributing
 
-Contributions in any form are highly encouraged and welcome! Be it new or improved presets, optimized streaming code or just some cleanup. So start forking!
+Bug reproductions, regression fixes, documentation improvements, and testing on additional platforms are welcome. Start with the [contribution guide](.github/CONTRIBUTING.md) and [upstream issue review](UPSTREAM_ISSUES.md). Report problems in [this fork's tracker](https://github.com/ShriedMC/Better-fluent-ffmpeg/issues).
+
+Maintainers can use the [project visibility checklist and announcement drafts](docs/PROJECT_VISIBILITY.md) when preparing a release.
 
 ### Code contributions
 
-If you want to add new features or change the API, please submit an issue first to make sure no one else is already working on the same thing and discuss the implementation and API details with maintainers and users by creating an issue.  When everything is settled down, you can submit a pull request.
-
-When fixing bugs, you can directly submit a pull request.
+Small fixes and documentation changes can go straight to a pull request. Discuss substantial features or API changes in an issue first so maintainers can agree on scope.
 
 Make sure to add tests for your features and bugfixes and update the documentation (see below) before submitting your code!
 
 ### Documentation contributions
 
-You can directly submit pull requests for documentation changes.  Make sure to regenerate the documentation before submitting (see below).
+You can directly submit pull requests for documentation changes. Build documentation locally when changing API comments or the docs toolchain (see below).
 
 ### Updating the documentation
 
@@ -1512,10 +1562,10 @@ When contributing API changes (new methods for example), be sure to update the R
 You can regenerate the JSDoc documentation by running the following command:
 
 ```sh
-$ make doc
+$ yarn docs
 ```
 
-To avoid polluting the commit history, make sure to only commit the regenerated JSDoc once and in a specific commit.
+Generated documentation is written to the ignored `build/docs` directory. Commit the documentation sources; CI also builds the documentation.
 
 ### Running tests
 

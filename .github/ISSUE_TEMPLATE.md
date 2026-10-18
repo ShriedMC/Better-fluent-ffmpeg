@@ -1,32 +1,32 @@
-<!-- Please fill the following template -->
+<!-- Report Better-fluent-ffmpeg problems here. Small reproductions help us investigate. -->
 
-### Version information
+### Versions and installation
 
-* fluent-ffmpeg version:
-* ffmpeg version:
-* OS:
+- Fork Git commit / lockfile resolved reference:
+- Installation command (GitHub fork or upstream npm package?):
+- Node.js version:
+- FFmpeg version and build configuration (`ffmpeg -version`):
+- ffprobe version (`ffprobe -version`):
+- Operating system:
 
-### Code to reproduce
+### Minimal reproduction
 
 ```js
-
-
+// Include input setup, command options, and completion/error handlers.
 ```
 
-(note: if the problem only happens with some inputs, include a link to such an input file)
+Sample file or command to generate it (if input-specific):
 
-### Expected results
+### Expected behavior
 
+### Actual behavior and diagnostics
 
+Include the complete error and stdout/stderr, and the command printed by the `start` event. For probes, include the callback error. Remove credentials and private URLs.
 
-### Observed results
+### Direct command comparison
 
+Does the equivalent ffmpeg/ffprobe command work outside Node.js? Include its command and result, or explain why the comparison is not possible.
 
+### Related report
 
-### Checklist
-
-<!-- you may delete that checklist when you have checked everything -->
-
-* [ ] I have read the [FAQ](https://github.com/fluent-ffmpeg/node-fluent-ffmpeg/wiki/FAQ)
-* [ ] I tried the same with command line ffmpeg and it works correctly (hint: if the problem also happens this way, this is an ffmpeg problem and you're not reporting it to the right place)
-* [ ] I have included full stderr/stdout output from ffmpeg
+Link an upstream or fork issue if relevant. See [reviewed upstream reports](https://github.com/ShriedMC/Better-fluent-ffmpeg/blob/master/UPSTREAM_ISSUES.md) and the [contribution guide](https://github.com/ShriedMC/Better-fluent-ffmpeg/blob/master/.github/CONTRIBUTING.md).
