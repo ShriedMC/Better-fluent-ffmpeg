@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Preserve cloned input type flags and the current input so input options, stream guards, and ffprobe continue to work on clones (upstream #473). Clone processing options independently to prevent timeout/niceness changes from affecting the original command. Clarify shared stream and event-handler behavior.
+
 - Honor standalone `aspect()` / `withAspectRatio()` calls using FFmpeg's display-aspect option; preserve existing sizing behavior and reject invalid ratios (upstream #1306).
 - Retain captured diagnostics and invoke the process completion callback once when a child emits both error and exit events (upstream #1316).
 - Add regressions for device format preflight (#1323/#1282) and invalid executable paths after cache warming (#1285). See [UPSTREAM_ISSUES.md](UPSTREAM_ISSUES.md) for the reviewed reports and remaining limitations.

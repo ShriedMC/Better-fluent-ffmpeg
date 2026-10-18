@@ -1401,14 +1401,16 @@ The returned object for filters looks like:
 
 ### Cloning an FfmpegCommand
 
-You can create clones of an FfmpegCommand instance by calling the `clone()` method.  The clone will be an exact copy of the original at the time it has been called (same inputs, same options, same event handlers, etc.).  This is mainly useful when you want to apply different processing options on the same input.
+You can create clones of an FfmpegCommand instance by calling the `clone()` method. The clone copies input configuration and processing options, including the current input. If the original has no output target yet, its output options are also copied. Existing output targets, event handlers, and running processes are not copied; attach completion/error handlers to each clone. This is useful when applying different processing options to the same file.
 
 Setting options, adding inputs or event handlers on a clone will not affect the original command.
+
+Input source objects and the logger are shared. A clone does not duplicate or rewind a readable stream. Use a file path or create a fresh readable stream for each processing job; do not run clones concurrently against the same stream. Explicitly probing a stream also consumes input data, as it does on a non-cloned command.
 
 ```js
 // Create a command to convert source.avi to MP4
 var command = ffmpeg('/path/to/source.avi')
-  .audioCodec('libfaac')
+  .audioCodec('aac')
   .videoCodec('libx264')
   .format('mp4');
 
