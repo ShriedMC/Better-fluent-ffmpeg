@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Preserve comma-separated color properties and channel layouts inside `codecData` detail fields, including nested parentheses (upstream #682).
+- Return input-stream errors once through both probe callbacks, stop the probe child on failure, and clean up source listeners and piping, including errors during executable lookup.
+
 - Add static and instance `ffprobeJSON()` methods for native structured metadata, preserving display matrices, rotation, multiline tags, and optional MPEG-TS program data (upstream #457/#1200). Existing `ffprobe()` value types are unchanged.
 - Request chapters by default and normalize chapter tags in the legacy probe API (upstream #1059). Document explicit probe options and their separation from transcoding input options (#1246/#1146).
 
