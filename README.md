@@ -1,11 +1,10 @@
-# Fluent ffmpeg-API for node.js
+# Better-Fluent ffmpeg-API for node.js a fork of Node-Fluent-ffmpeg
 
 [![Coverage Status](https://coveralls.io/repos/github/fluent-ffmpeg/node-fluent-ffmpeg/badge.svg?branch=master)](https://coveralls.io/github/fluent-ffmpeg/node-fluent-ffmpeg?branch=master)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Ffluent-ffmpeg%2Fnode-fluent-ffmpeg.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Ffluent-ffmpeg%2Fnode-fluent-ffmpeg?ref=badge_shield)
 
-## Fluent-ffmpeg is now deprecated
-
-This library is **no longer maintained** and no longer works properly with recent ffmpeg versions. Use it as your own risk, this repository is readonly and does not accept issues or PRs.
+## Better-Fluent
+The mere goal of this library is to keep the tools that you've been using, while allowing you to use newer versions with some improvements!
 
 ## About
 
