@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add static and instance `ffprobeJSON()` methods for native structured metadata, preserving display matrices, rotation, multiline tags, and optional MPEG-TS program data (upstream #457/#1200). Existing `ffprobe()` value types are unchanged.
+- Request chapters by default and normalize chapter tags in the legacy probe API (upstream #1059). Document explicit probe options and their separation from transcoding input options (#1246/#1146).
+
 - Preserve cloned input type flags and the current input so input options, stream guards, and ffprobe continue to work on clones (upstream #473). Clone processing options independently to prevent timeout/niceness changes from affecting the original command. Clarify shared stream and event-handler behavior.
 
 - Honor standalone `aspect()` / `withAspectRatio()` calls using FFmpeg's display-aspect option; preserve existing sizing behavior and reject invalid ratios (upstream #1306).
