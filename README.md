@@ -832,6 +832,8 @@ The `codecData` event is emitted when ffmpeg outputs codec information about its
 * `video`: video codec
 * `video_details`: video encoding details
 
+The detail arrays split top-level fields only; grouped values such as `yuv420p(tv, bt709)` remain one entry.
+
 ```js
 ffmpeg('/path/to/file.avi')
   .on('codecData', function(data) {
@@ -1190,6 +1192,8 @@ command.ffprobe(['-headers', requestHeaders], callback);
 ```
 
 **Warning:** both probe methods may be called with an input stream, but in this case *they consume data from the stream*, and this data will no longer be available for ffmpeg. Using a probe and a transcoding command on the same input stream will most likely fail unless the stream is a live stream. Only do this if you know what you're doing.
+
+If a readable fails while probing, its original error is returned through the probe callback and the probe process is stopped. The library removes its source error listener and unpipes/pauses the readable when probing finishes; callers retain ownership of the source and can destroy it when appropriate.
 
 `ffprobeJSON()` returns the object produced by the following command. `ffprobe()` returns legacy-converted metadata with the same stream, format, and chapter categories:
 
